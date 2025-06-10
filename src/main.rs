@@ -7,10 +7,7 @@ use sqlx::postgres::PgPoolOptions;
 use std::env;
 
 // Internal modules
-mod api; // API routes and handlers
-mod database; // Database connection and operations
-mod models; // Data models and structures
-mod utils; // Utility functions and helpers
+mod websocket;
 
 #[rocket::main]
 async fn main() -> anyhow::Result<()> {
@@ -21,16 +18,7 @@ async fn main() -> anyhow::Result<()> {
     let cors = CorsOptions::default().to_cors().unwrap();
 
     rocket::build()
-        .mount(
-            "/api/auth",
-            routes![
-                api::authentications::login,
-                api::authentications::logout,
-                api::authentications::register,
-                api::authentications::reset_password,
-                api::authentications::check_username,
-            ],
-        )
+        .mount("/ws", routes![websocket::ws_handler,])
         .manage(pool)
         .attach(cors)
         .launch()
