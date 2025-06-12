@@ -11,6 +11,7 @@ async fn main() {
     let ws_route = warp::path("ws")
         .and(warp::ws())
         .map(move |ws: warp::ws::Ws| {
+            println!("WebSocket connection established");
             let tx = tx_ws.clone();
             ws.on_upgrade(move |websocket| websockets::handle_connection(websocket, tx))
         });
