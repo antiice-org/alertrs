@@ -9,11 +9,14 @@ async fn main() {
     let tx = Arc::new(Mutex::new(broadcast::channel(100).0));
     let tx_ws = tx.clone();
     let ws_route = warp::path("ws")
+        .and(warp::addr::remote())
         .and(warp::ws())
-        .map(move |ws: warp::ws::Ws| {
-            println!("WebSocket connection established");
-            let tx = tx_ws.clone();
-            ws.on_upgrade(move |websocket| websockets::handle_connection(websocket, tx))
-        });
+        .map(
+            move |addr: Option<std::net::SocketAddr>, ws: warp::ws::Ws| {
+                println!("WebSocket connection established from {:?}", addr);
+                let tx = tx_ws.clone();
+                ws.on_upgrade(move |websocket| websockets::handle_connection(websocket, tx))
+            },
+        );
     warp::serve(ws_route).run(([0, 0, 0, 0], 8000)).await;
 }
